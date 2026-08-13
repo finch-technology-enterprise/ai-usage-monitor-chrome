@@ -17,6 +17,17 @@ A tiny Manifest V3 Chrome extension for viewing subscription quota/usage for:
 7. Right-click the extension → **Options** and paste your OpenCode Go API key.
 8. Make sure you are signed in to `claude.ai` and `chatgpt.com` in the same Chrome profile.
 
+## Dock launcher (macOS)
+
+Optional: give the usage window its own launcher icon in the Dock instead of opening it from the toolbar.
+
+```sh
+bash install-launcher.sh   # installs "AI Usage Monitor.app" into ~/Applications
+bash uninstall-launcher.sh # removes it
+```
+
+After installing, drag **AI Usage Monitor** from `~/Applications` into the Dock and choose *Options → Keep in Dock*. Clicking the Dock icon opens or focuses the usage window without touching the browser. The launcher script detects the extension ID automatically from the browser profile.
+
 ## How it works
 
 ### OpenCode Go

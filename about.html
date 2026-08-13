@@ -57,6 +57,7 @@
       color: var(--muted);
       margin-bottom: 20px;
     }
+    code { font-size: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 2px 6px; }
     footer { margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
   </style>
 </head>
@@ -70,6 +71,14 @@
       <h2>About</h2>
       <p>AI Usage Monitor is a personal Manifest V3 Chrome extension that shows your subscription quota usage for OpenCode Go, Claude, and ChatGPT / Codex at a glance.</p>
       <p>Usage data is fetched directly from each provider and never leaves your machine. No analytics, no tracking, no external servers — <strong>local-only</strong>.</p>
+    </div>
+
+    <div class="section">
+      <h2>Dock launcher (macOS)</h2>
+      <p>The usage window can be launched from the Dock instead of the browser toolbar. From the extension folder, run:</p>
+      <p><code>bash install-launcher.sh</code></p>
+      <p>then drag <strong>AI Usage Monitor</strong> from <code>~/Applications</code> into the Dock and choose <em>Options → Keep in Dock</em>. To remove it later:</p>
+      <p><code>bash uninstall-launcher.sh</code></p>
     </div>
 
     <div class="section">

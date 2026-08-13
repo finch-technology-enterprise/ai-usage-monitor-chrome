@@ -387,7 +387,7 @@ $('refreshAll').addEventListener('click', () => refreshAll(true));
 
 async function fitWindowToContent() {
   const win = await chrome.windows.getCurrent();
-  if (!win || win.state !== 'normal') return;
+  if (!win || win.state !== 'normal' || win.type !== 'popup') return;
   const shell = document.querySelector('.shell');
   const docHeight = Math.ceil(shell?.getBoundingClientRect().height || document.documentElement.scrollHeight);
   const frame = Math.max(0, (window.outerHeight || 0) - (window.innerHeight || 0));
