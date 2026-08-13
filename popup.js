@@ -115,13 +115,13 @@ async function jsonFetch(url, options = {}) {
   }
 }
 
-async function refreshOpenCode() {
+async function refreshOpenCode(silent = false) {
   const body = $('opencodeBody');
-  body.innerHTML = '<div class="loading">Loading…</div>';
+  if (!silent) body.innerHTML = '<div class="loading">Loading…</div>';
   const { opencodeApiKey = '' } = await chrome.storage.local.get('opencodeApiKey');
   if (!opencodeApiKey.trim()) {
-    body.innerHTML = errorHtml('OpenCode API key not configured.', 'Open Settings and paste your OpenCode Go API key.');
-    return;
+    if (!silent) body.innerHTML = errorHtml('OpenCode API key not configured.', 'Open Settings and paste your OpenCode Go API key.');
+    return false;
   }
 
   try {
@@ -152,8 +152,10 @@ async function refreshOpenCode() {
 
     if (!html) throw new Error('Unexpected OpenCode usage response format');
     body.innerHTML = html;
+    return true;
   } catch (error) {
-    body.innerHTML = errorHtml(`Could not load OpenCode Go: ${error.message}`, 'Verify the API key in Settings.');
+    if (!silent) body.innerHTML = errorHtml(`Could not load OpenCode Go: ${error.message}`, 'Verify the API key in Settings.');
+    return false;
   }
 }
 
@@ -232,9 +234,9 @@ function claudeUsageHtml(data) {
   return html;
 }
 
-async function refreshClaude() {
+async function refreshClaude(silent = false) {
   const body = $('claudeBody');
-  body.innerHTML = '<div class="loading">Loading…</div>';
+  if (!silent) body.innerHTML = '<div class="loading">Loading…</div>';
   try {
     let data;
     try {
@@ -245,8 +247,10 @@ async function refreshClaude() {
     const html = claudeUsageHtml(data);
     if (!html) throw new Error('Unexpected Claude usage response format');
     body.innerHTML = html;
+    return true;
   } catch (error) {
-    body.innerHTML = errorHtml(`Could not load Claude: ${error.message}`, 'Sign in to claude.ai. If needed, keep a Claude tab open for the fallback relay.');
+    if (!silent) body.innerHTML = errorHtml(`Could not load Claude: ${error.message}`, 'Sign in to claude.ai. If needed, keep a Claude tab open for the fallback relay.');
+    return false;
   }
 }
 
@@ -324,9 +328,9 @@ function chatGptUsageHtml(data) {
   return html;
 }
 
-async function refreshChatGpt() {
+async function refreshChatGpt(silent = false) {
   const body = $('chatgptBody');
-  body.innerHTML = '<div class="loading">Loading…</div>';
+  if (!silent) body.innerHTML = '<div class="loading">Loading…</div>';
   try {
     let data;
     try {
@@ -338,25 +342,42 @@ async function refreshChatGpt() {
     if (!html) throw new Error('Unexpected ChatGPT/Codex usage response format');
     body.innerHTML = html;
     if (data?.plan_type) $('chatgptPlan').textContent = String(data.plan_type).replaceAll('_', ' ');
+    return true;
   } catch (error) {
-    body.innerHTML = errorHtml(`Could not load ChatGPT/Codex: ${error.message}`, 'Sign in to chatgpt.com. If needed, keep a ChatGPT tab open for the fallback relay.');
+    if (!silent) body.innerHTML = errorHtml(`Could not load ChatGPT/Codex: ${error.message}`, 'Sign in to chatgpt.com. If needed, keep a ChatGPT tab open for the fallback relay.');
+    return false;
   }
 }
 
-async function refreshAll() {
-  const button = $('refreshAll');
-  button.classList.add('spinning');
-  button.disabled = true;
-  await Promise.allSettled([refreshOpenCode(), refreshClaude(), refreshChatGpt()]);
-  $('updatedAt').textContent = `Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-  button.classList.remove('spinning');
-  button.disabled = false;
+let refreshing = false;
+
+async function refreshAll(silent = false) {
+  if (refreshing) return;
+  refreshing = true;
+  try {
+    const button = $('refreshAll');
+    if (!silent) {
+      button.classList.add('spinning');
+      button.disabled = true;
+    }
+    const results = await Promise.all([refreshOpenCode(silent), refreshClaude(silent), refreshChatGpt(silent)]);
+    if (results.includes(true)) {
+      $('updatedAt').textContent = `Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    if (!silent) {
+      button.classList.remove('spinning');
+      button.disabled = false;
+    }
+  } finally {
+    refreshing = false;
+  }
 }
 
 for (const button of document.querySelectorAll('[data-open]')) {
   button.addEventListener('click', () => chrome.tabs.create({ url: button.dataset.open }));
 }
 $('settings').addEventListener('click', () => chrome.runtime.openOptionsPage());
-$('refreshAll').addEventListener('click', refreshAll);
+$('refreshAll').addEventListener('click', () => refreshAll(true));
 
 refreshAll();
+setInterval(() => refreshAll(true), 60000);
