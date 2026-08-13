@@ -119,3 +119,15 @@ async function relayMessage(hostPattern, message) {
   }
   throw new Error('Open the provider website in a tab and try Refresh again');
 }
+
+const DEFAULT_ENABLED = ['opencode', 'claude', 'chatgpt'];
+
+async function loadProviderPrefs() {
+  const stored = await chrome.storage.local.get(['enabledProviders', 'opencodeApiKey']);
+  let map = stored.enabledProviders;
+  if (map == null) {
+    map = stored.opencodeApiKey ? Object.fromEntries(DEFAULT_ENABLED.map((id) => [id, true])) : {};
+    await chrome.storage.local.set({ enabledProviders: map });
+  }
+  return { enabled: new Set(Object.entries(map).filter(([, v]) => v).map(([id]) => id)) };
+}
