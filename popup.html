@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Usage Monitor</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <h1>AI Usage</h1>
+        <p id="updatedAt">Not refreshed yet</p>
+      </div>
+      <button id="refreshAll" class="icon-btn" title="Refresh all" aria-label="Refresh all">↻</button>
+    </header>
+
+    <section class="provider" id="opencodeCard">
+      <div class="provider-head">
+        <div>
+          <h2>OpenCode Go</h2>
+          <span id="opencodePlan" class="subtle">Go</span>
+        </div>
+        <button class="small-btn" data-open="https://opencode.ai">Open</button>
+      </div>
+      <div id="opencodeBody" class="body"><div class="loading">Loading…</div></div>
+    </section>
+
+    <section class="provider" id="claudeCard">
+      <div class="provider-head">
+        <div>
+          <h2>Claude</h2>
+          <span id="claudePlan" class="subtle">Team / subscription</span>
+        </div>
+        <button class="small-btn" data-open="https://claude.ai/settings/usage">Open</button>
+      </div>
+      <div id="claudeBody" class="body"><div class="loading">Loading…</div></div>
+    </section>
+
+    <section class="provider" id="chatgptCard">
+      <div class="provider-head">
+        <div>
+          <h2>ChatGPT / Codex</h2>
+          <span id="chatgptPlan" class="subtle">Plus</span>
+        </div>
+        <button class="small-btn" data-open="https://chatgpt.com/#usage">Open</button>
+      </div>
+      <div id="chatgptBody" class="body"><div class="loading">Loading…</div></div>
+    </section>
+
+    <footer>
+      <span id="privacyText">Local-only. No analytics.</span>
+      <button id="settings" class="link-btn">Settings</button>
+    </footer>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>
