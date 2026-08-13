@@ -131,3 +131,16 @@ async function loadProviderPrefs() {
   }
   return { enabled: new Set(Object.entries(map).filter(([, v]) => v).map(([id]) => id)) };
 }
+
+const AIUsageProviders = {
+  list: [],
+  register(provider) {
+    if (!provider?.id || !provider.label || typeof provider.refresh !== 'function') {
+      throw new Error(`Invalid provider registration: ${provider?.id}`);
+    }
+    this.list.push(provider);
+  },
+  enabledIds(ids) {
+    return this.list.filter((p) => ids.has(p.id));
+  }
+};
