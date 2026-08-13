@@ -1,4 +1,4 @@
-# AI Usage Monitor (Personal Chrome Extension)
+# AI Usage Quota Monitor (Chrome Extension)
 
 A tiny Manifest V3 Chrome extension for viewing subscription quota/usage for:
 
@@ -27,6 +27,19 @@ bash uninstall-launcher.sh # removes it
 ```
 
 After installing, drag **AI Usage Monitor** from `~/Applications` into the Dock and choose *Options → Keep in Dock*. Clicking the Dock icon opens or focuses the usage window without touching the browser. The launcher script detects the extension ID automatically from the browser profile.
+
+## Releasing to the Chrome Web Store
+
+1. Create the store item once in the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole) (upload any zip; you'll replace it on each release).
+2. Create a Google Cloud OAuth client and obtain a refresh token — follow [fregante/chrome-webstore-upload-keys](https://github.com/fregante/chrome-webstore-upload-keys).
+3. Add GitHub Actions secrets: `CWS_EXTENSION_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`, `CWS_PUBLISHER_ID`.
+4. Cut a release — this bumps `manifest.json`, tags, and pushes, and the `publish.yml` workflow zips and uploads/publishes to the store:
+
+```sh
+bash release.sh v1.0.1
+```
+
+The submission still goes through Chrome's review process; the workflow automates the upload + submit step.
 
 ## How it works
 

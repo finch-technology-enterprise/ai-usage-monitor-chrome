@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "AI Usage Monitor (Personal)",
+  "name": "AI Usage Quota Monitor",
   "version": "0.1.0",
   "description": "Personal quota monitor for OpenCode Go, Claude, and ChatGPT/Codex.",
   "minimum_chrome_version": "120",

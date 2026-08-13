@@ -5,6 +5,7 @@ Personal Chrome extension (Manifest V3) that shows quota usage for OpenCode Go, 
 ## Working with this repo
 
 - There is no build/test/lint step. Chrome loads the folder directly (`chrome://extensions` → Load unpacked). After editing, click **Reload** on the extension; content scripts (`relay-*.js`) additionally require refreshing the provider tab.
+- Releasing: `bash release.sh vX.Y.Z` bumps `manifest.json` version from the tag, then `.github/workflows/publish.yml` zips the extension and uploads/publishes to the Chrome Web Store via `chrome-webstore-upload-cli` (GitHub secrets `CWS_*`). Store listing fields live in the Web Store dashboard, not the repo.
 - `manifest.json` is the only wiring: `background.js` (service worker; toolbar click opens/focuses one standalone `popup.html` window, no `default_popup`), `options.html`+`options.js` (settings), content scripts `relay-claude.js` (claude.ai) and `relay-chatgpt.js` (chatgpt.com). Keep icons at `icons/icon{16,32,48,128}.png`.
 - Permissions are intentionally narrow: `storage`, `cookies`, and host access only to `opencode.ai`, `claude.ai`, `chatgpt.com`. Don't widen them.
 
