@@ -21,8 +21,9 @@
     return response.json();
   }
 
-  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message?.type !== 'AI_USAGE_CLAUDE') return;
+    if (sender?.id !== chrome.runtime.id) return;
     (async () => {
       const orgs = await fetchJson('/api/organizations');
       const ids = [...collectOrgIds(orgs)];

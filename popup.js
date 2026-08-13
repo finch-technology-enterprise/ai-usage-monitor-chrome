@@ -181,11 +181,17 @@ function collectOrgIds(value, out = new Set()) {
   return out;
 }
 
+let cachedClaudeOrgId = null;
+
 async function directClaudeUsage() {
-  let orgId = await getClaudeOrgFromCookie();
+  let orgId = cachedClaudeOrgId;
   if (!orgId) {
-    const orgs = await jsonFetch(`${ENDPOINTS.claude}/api/organizations`, { credentials: 'include' });
-    orgId = [...collectOrgIds(orgs)][0];
+    orgId = await getClaudeOrgFromCookie();
+    if (!orgId) {
+      const orgs = await jsonFetch(`${ENDPOINTS.claude}/api/organizations`, { credentials: 'include' });
+      orgId = [...collectOrgIds(orgs)][0];
+    }
+    if (orgId) cachedClaudeOrgId = orgId;
   }
   if (!orgId) throw new Error('Could not determine Claude organization');
   return jsonFetch(`${ENDPOINTS.claude}/api/organizations/${encodeURIComponent(orgId)}/usage`, {
@@ -399,4 +405,7 @@ new ResizeObserver(() => fitWindowToContent()).observe(document.body);
 setInterval(() => fitWindowToContent(), 500);
 
 refreshAll();
-setInterval(() => refreshAll(true), 60000);
+setInterval(() => { if (!document.hidden) refreshAll(true); }, 60000);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) refreshAll(true);
+});
