@@ -74,13 +74,14 @@ function metricHtml(label, percent, meta = '', right = null) {
   const p = clampPercent(percent);
   if (p == null) return '';
   const shown = p % 1 === 0 ? p.toFixed(0) : p.toFixed(1);
+  const tone = p >= 85 ? 'bar-danger' : p >= 60 ? 'bar-warn' : 'bar-ok';
   return `
     <div class="metric">
       <div class="metric-row">
         <span class="metric-label">${escapeHtml(label)}</span>
         <span class="metric-value">${escapeHtml(right || `${shown}%`)}</span>
       </div>
-      <div class="bar"><div style="width:${p}%"></div></div>
+      <div class="bar"><div class="${tone}" style="width:${p}%"></div></div>
       ${meta ? `<div class="metric-meta">${escapeHtml(meta)}</div>` : ''}
     </div>`;
 }
