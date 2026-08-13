@@ -379,5 +379,24 @@ for (const button of document.querySelectorAll('[data-open]')) {
 $('settings').addEventListener('click', () => chrome.runtime.openOptionsPage());
 $('refreshAll').addEventListener('click', () => refreshAll(true));
 
+async function fitWindowToContent() {
+  const win = await chrome.windows.getCurrent();
+  if (!win || win.state !== 'normal') return;
+  const shell = document.querySelector('.shell');
+  const docHeight = Math.ceil(shell?.getBoundingClientRect().height || document.documentElement.scrollHeight);
+  const frame = Math.max(0, (window.outerHeight || 0) - (window.innerHeight || 0));
+  const target = {
+    width: 400,
+    height: Math.min(docHeight + frame, Math.floor(screen.availHeight))
+  };
+  if (win.width === target.width && win.height === target.height) return;
+  try {
+    await chrome.windows.update(win.id, target);
+  } catch { /* bounds may be mid-drag; re-check on the next tick */ }
+}
+
+new ResizeObserver(() => fitWindowToContent()).observe(document.body);
+setInterval(() => fitWindowToContent(), 500);
+
 refreshAll();
 setInterval(() => refreshAll(true), 60000);

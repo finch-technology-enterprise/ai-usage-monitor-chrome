@@ -83,4 +83,5 @@ h2 { margin: 0; font-size: 15px; }
 .status-ok { color: var(--ok); }
 .status-warn { color: var(--warning); }
 footer { display: flex; justify-content: space-between; align-items: center; padding: 4px 2px 0; color: var(--muted); font-size: 10px; }
+.footer-links { display: flex; gap: 10px; }
 .link-btn { border: 0; background: transparent; padding: 4px; color: var(--muted); text-decoration: underline; }
