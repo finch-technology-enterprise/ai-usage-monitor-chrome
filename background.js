@@ -89,14 +89,15 @@ async function closeTrackedTab() {
   } catch { /* tab no longer exists */ }
 }
 
-// All openView calls (toolbar click and switcher messages) go through this
-// chain so two rapid switches cannot interleave — e.g. a tab switch removing
-// a window a window switch is about to focus.
-let viewQueue = Promise.resolve();
+// View opens and focus changes go through this single chain so they cannot
+// interleave: rapid switches cannot race each other, and the focus loss that
+// precedes a toolbar click cannot close a window a queued openView is about
+// to focus.
+let queue = Promise.resolve();
 
-function enqueueViewOpen(mode) {
-  const run = viewQueue.then(() => openView(mode));
-  viewQueue = run.catch(() => { /* next caller still runs */ });
+function enqueue(task) {
+  const run = queue.then(task);
+  queue = run.catch(() => { /* next task still runs */ });
   return run;
 }
 
@@ -129,14 +130,8 @@ async function openView(mode) {
 // Dismissable view: close the popup window whenever focus moves elsewhere.
 // A newly created window is only armed once it reports focus itself, so the
 // transient focus events during creation can never close it prematurely.
-// Focus changes are serialized so the arm/close reads and writes cannot
-// interleave with each other.
-let focusQueue = Promise.resolve();
-
 chrome.windows.onFocusChanged.addListener((windowId) => {
-  focusQueue = focusQueue
-    .then(() => handleFocusChange(windowId))
-    .catch(() => { /* keep the chain alive */ });
+  enqueue(() => handleFocusChange(windowId));
 });
 
 async function handleFocusChange(windowId) {
@@ -155,7 +150,7 @@ async function handleFocusChange(windowId) {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === 'AI_USAGE_SET_VIEW') {
-    enqueueViewOpen(message.mode)
+    enqueue(() => openView(message.mode))
       .then(() => sendResponse({ ok: true }))
       .catch((error) => sendResponse({ ok: false, error: String(error) }));
     return true;
@@ -169,8 +164,9 @@ function handleClick() {
   if (!inFlight) {
     inFlight = (async () => {
       const mode = await getViewMode();
-      await enqueueViewOpen(mode);
-    })().finally(() => { inFlight = null; });
+      await enqueue(() => openView(mode));
+    })().catch(() => { /* toolbar clicks must not reject unhandled */ })
+      .finally(() => { inFlight = null; });
   }
   return inFlight;
 }
