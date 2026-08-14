@@ -29,13 +29,12 @@ On a fresh install no providers are enabled and the popup shows an empty state �
 
 ## View modes
 
-The monitor can be viewed three ways, chosen in Settings or with the switcher at the top of the monitor itself (the last choice becomes the default for the toolbar button):
+The toolbar button opens the monitor as a standard Chrome popup — it dismisses when you click elsewhere. To keep it open, use the buttons at the top of the monitor:
 
-- **Window** — a persistent popup window that stays open until you close it (Cmd+W or the ✕ button).
-- **Dismissable** — the same popup window, but it closes automatically when you click away to another window or app.
-- **Tab** — the monitor as a normal browser tab, handy when you want it alongside your work.
+- **Open as window** — a persistent popup window that stays open until you close it (Cmd+W or the ✕ button).
+- **Open as tab** — the monitor as a normal browser tab, handy when you want it alongside your work.
 
-Switching between the two window modes happens in place; switching to Tab closes the monitor window and opens a tab, and switching back closes the tab and reopens the window. If the monitor tab has been navigated to another site, it is left alone.
+Opening one view closes the other: switching to Tab closes the monitor window and opens a tab, and switching back closes the tab and reopens the window. If the monitor tab has been navigated to another site, it is left alone.
 
 ## Dock launcher (macOS)
 

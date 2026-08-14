@@ -1,20 +1,8 @@
 const POPUP_URL = chrome.runtime.getURL('popup.html');
+const WINDOW_URL = `${POPUP_URL}?container=window`;
+const TAB_URL = `${POPUP_URL}?container=tab`;
 const WINDOW_KEY = 'popupWindowId';
 const TAB_KEY = 'popupTabId';
-const VIEW_KEY = 'viewMode';
-const VIEW_MODES = ['window', 'dismissable', 'tab'];
-const DEFAULT_VIEW = 'window';
-
-let inFlight = null;
-
-async function getViewMode() {
-  const { [VIEW_KEY]: mode } = await chrome.storage.local.get(VIEW_KEY);
-  return VIEW_MODES.includes(mode) ? mode : DEFAULT_VIEW;
-}
-
-async function setViewMode(mode) {
-  await chrome.storage.local.set({ [VIEW_KEY]: mode });
-}
 
 // Pings the tracked tab; only our popup.html page answers, so this tells us
 // whether the tab is still ours or the user navigated it somewhere else.
@@ -52,7 +40,7 @@ async function focusOrCreateWindow() {
     await chrome.storage.session.remove(WINDOW_KEY);
   }
   const win = await chrome.windows.create({
-    url: POPUP_URL,
+    url: WINDOW_URL,
     type: 'popup',
     width: 400,
     height: 720
@@ -73,7 +61,7 @@ async function focusOrCreateTab() {
     }
     await chrome.storage.session.remove(TAB_KEY);
   }
-  const tab = await chrome.tabs.create({ url: POPUP_URL });
+  const tab = await chrome.tabs.create({ url: TAB_URL });
   await chrome.storage.session.set({ [TAB_KEY]: tab.id });
 }
 
@@ -87,6 +75,21 @@ async function closeTrackedTab() {
   } catch { /* tab no longer exists */ }
 }
 
+async function openWindow() {
+  const { [TAB_KEY]: tabId } = await chrome.storage.session.get(TAB_KEY);
+  if (tabId != null) await closeTrackedTab();
+  return focusOrCreateWindow();
+}
+
+async function openTab() {
+  const { [WINDOW_KEY]: winId } = await chrome.storage.session.get(WINDOW_KEY);
+  await chrome.storage.session.remove(WINDOW_KEY);
+  if (winId != null) {
+    try { await chrome.windows.remove(winId); } catch { /* window no longer exists */ }
+  }
+  return focusOrCreateTab();
+}
+
 // View opens go through this single chain so rapid switches cannot
 // interleave — e.g. a tab switch removing a window a window switch is
 // about to focus.
@@ -98,27 +101,10 @@ function enqueue(task) {
   return run;
 }
 
-async function openView(mode) {
-  if (!VIEW_MODES.includes(mode)) mode = DEFAULT_VIEW;
-  await setViewMode(mode);
-
-  if (mode === 'tab') {
-    const { [WINDOW_KEY]: winId } = await chrome.storage.session.get(WINDOW_KEY);
-    await chrome.storage.session.remove(WINDOW_KEY);
-    if (winId != null) {
-      try { await chrome.windows.remove(winId); } catch { /* window no longer exists */ }
-    }
-    return focusOrCreateTab();
-  }
-
-  const { [TAB_KEY]: tabId } = await chrome.storage.session.get(TAB_KEY);
-  if (tabId != null) await closeTrackedTab();
-  return focusOrCreateWindow();
-}
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message?.type === 'AI_USAGE_SET_VIEW') {
-    enqueue(() => openView(message.mode))
+  if (message?.type === 'AI_USAGE_OPEN_WINDOW' || message?.type === 'AI_USAGE_OPEN_TAB') {
+    const task = message.type === 'AI_USAGE_OPEN_WINDOW' ? openWindow : openTab;
+    enqueue(task)
       .then(() => sendResponse({ ok: true }))
       .catch((error) => sendResponse({ ok: false, error: String(error) }));
     return true;
@@ -127,17 +113,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ ok: true });
   }
 });
-
-function handleClick() {
-  if (!inFlight) {
-    inFlight = enqueue(async () => openView(await getViewMode()))
-      .catch(() => { /* toolbar clicks must not reject unhandled */ })
-      .finally(() => { inFlight = null; });
-  }
-  return inFlight;
-}
-
-chrome.action.onClicked.addListener(handleClick);
 
 chrome.windows.onRemoved.addListener(async (windowId) => {
   const { [WINDOW_KEY]: storedId } = await chrome.storage.session.get(WINDOW_KEY);
