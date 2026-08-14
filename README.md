@@ -45,7 +45,7 @@ bash install-launcher.sh   # installs "AI Usage Monitor.app" into ~/Applications
 bash uninstall-launcher.sh # removes it
 ```
 
-After installing, drag **AI Usage Monitor** from `~/Applications` into the Dock and choose *Options → Keep in Dock*. Clicking the Dock icon opens or focuses the usage window without touching the browser. The launcher script detects the extension ID automatically from the browser profile.
+After installing, drag **AI Usage Monitor** from `~/Applications` into the Dock and choose *Options → Keep in Dock*. Clicking the Dock icon opens or focuses the usage window without touching the browser. The launcher script detects the extension ID automatically from the browser profile. Re-run `bash install-launcher.sh` after updating the extension so the launcher keeps opening the popup window.
 
 ## Releasing to the Chrome Web Store
 
