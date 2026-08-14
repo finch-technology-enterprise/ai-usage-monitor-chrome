@@ -9,17 +9,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === 'AI_USAGE_PING') sendResponse({ ok: true });
 });
 
-// Pop-out to a window or tab, then dismiss this page. The native popup
-// must close itself (the background doesn't track it); window/tab pages
-// are closed by the background as it swaps containers, so window.close()
-// there is a harmless no-op.
+// Pop out to a window or tab, then dismiss this page. The native popup
+// must close itself (the background doesn't track it); when switching
+// containers the background closes the window/tab it swaps out, so the
+// page's window.close() is only the redundant path. Clicking the button
+// for the container we're already in does nothing.
 document.querySelector('.view-switcher').addEventListener('click', async (event) => {
   const btn = event.target.closest('.view-btn');
   if (!btn || !btn.dataset.openContainer) return;
+  if (btn.dataset.openContainer === CONTAINER) return;
   const type = btn.dataset.openContainer === 'window' ? 'AI_USAGE_OPEN_WINDOW' : 'AI_USAGE_OPEN_TAB';
+  let response;
   try {
-    await chrome.runtime.sendMessage({ type });
+    response = await chrome.runtime.sendMessage({ type });
   } catch { /* view may already be switching */ }
+  if (!response?.ok) return;
   window.close();
 });
 

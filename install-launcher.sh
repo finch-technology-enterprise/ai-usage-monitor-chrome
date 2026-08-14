@@ -57,7 +57,7 @@ iconutil -c icns "$ICONSET" -o "$TMP/aiusage.icns"
 # Build the launcher AppleScript app.
 cat > "$TMP/launch.applescript" << EOF
 on run
-	set extUrl to "chrome-extension://${EXT_ID}/popup.html"
+ 	set extUrl to "chrome-extension://${EXT_ID}/popup.html?container=window"
 	if application "Brave Browser" is running then
 		tell application "Brave Browser"
 			repeat with w in windows

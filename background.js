@@ -118,3 +118,8 @@ chrome.windows.onRemoved.addListener(async (windowId) => {
   const { [WINDOW_KEY]: storedId } = await chrome.storage.session.get(WINDOW_KEY);
   if (storedId === windowId) await chrome.storage.session.remove(WINDOW_KEY);
 });
+
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+  const { [TAB_KEY]: storedId } = await chrome.storage.session.get(TAB_KEY);
+  if (storedId === tabId) await chrome.storage.session.remove(TAB_KEY);
+});
