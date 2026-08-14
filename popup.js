@@ -4,6 +4,7 @@ const $ = (id) => document.getElementById(id);
 // window), or 'tab'. The background appends ?container= when it opens the
 // page as a window or tab; the native popup has no parameter.
 const CONTAINER = new URLSearchParams(location.search).get('container') ?? 'popup';
+document.body.classList.add(`container-${CONTAINER}`);
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === 'AI_USAGE_PING') sendResponse({ ok: true });
@@ -81,6 +82,7 @@ async function render() {
   const providers = AIUsageProviders.enabledIds(prefs.enabled);
   $('providers').innerHTML = providers.map(providerCardHtml).join('');
   $('emptyState').hidden = providers.length > 0;
+  document.body.classList.toggle('empty-popup', providers.length === 0);
   if (providers.length) await refreshAll(true);
 }
 
@@ -113,5 +115,12 @@ async function fitWindowToContent() {
   } catch { /* bounds may be mid-drag; re-check on the next tick */ }
 }
 
-new ResizeObserver(() => fitWindowToContent()).observe(document.body);
-setInterval(() => fitWindowToContent(), 500);
+// Auto-fit only matters in the popup window, the one container the
+// extension can resize. In the native popup (and tab) observing the body
+// would only echo content growth back into a ResizeObserver that can't
+// act on it, producing a "loop completed with undelivered notifications"
+// warning. The native popup is sized to a fixed height in CSS instead.
+if (CONTAINER === 'window') {
+  new ResizeObserver(() => fitWindowToContent()).observe(document.body);
+  setInterval(() => fitWindowToContent(), 500);
+}
