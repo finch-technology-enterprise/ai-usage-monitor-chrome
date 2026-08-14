@@ -1,10 +1,39 @@
 const $ = (id) => document.getElementById(id);
 
 const VIEW_MODES = ['window', 'dismissable', 'tab'];
+const DISMISS_GRACE_MS = 250;
 let viewMode = 'window';
+let dismissTimer = null;
+let isPopupWindow = false;
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === 'AI_USAGE_PING') sendResponse({ ok: true });
+});
+
+// The page lives in a popup window or a tab; the container never changes,
+// and only a popup window may dismiss itself (a tab must never close on
+// blur — switching browser tabs fires blur).
+chrome.windows.getCurrent().then((win) => {
+  isPopupWindow = win?.type === 'popup';
+});
+
+// Dismissable view: the page closes itself when the window loses focus
+// (clicking another window or app). Grace period + hasFocus() guard absorb
+// transient focus blips; the focus event cancels a pending close.
+function armDismissClose() {
+  if (!isPopupWindow || viewMode !== 'dismissable' || dismissTimer) return;
+  dismissTimer = setTimeout(() => {
+    dismissTimer = null;
+    if (!document.hasFocus()) window.close();
+  }, DISMISS_GRACE_MS);
+}
+
+window.addEventListener('blur', armDismissClose);
+window.addEventListener('focus', () => {
+  if (dismissTimer) {
+    clearTimeout(dismissTimer);
+    dismissTimer = null;
+  }
 });
 
 async function initViewSwitcher() {
@@ -14,6 +43,23 @@ async function initViewSwitcher() {
     btn.classList.toggle('active', btn.dataset.mode === viewMode);
   });
 }
+
+// Settings writes viewMode directly; keep an open page in sync so the
+// switcher highlight and the dismiss behavior reflect the saved default.
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local' || !changes.viewMode) return;
+  const mode = changes.viewMode.newValue;
+  if (VIEW_MODES.includes(mode)) viewMode = mode;
+  if (viewMode !== 'dismissable' && dismissTimer) {
+    clearTimeout(dismissTimer);
+    dismissTimer = null;
+  } else if (viewMode === 'dismissable' && !document.hasFocus()) {
+    armDismissClose(); // adopted dismissable while already unfocused — dismiss
+  }
+  document.querySelectorAll('.view-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.mode === viewMode);
+  });
+});
 
 document.querySelector('.view-switcher').addEventListener('click', async (event) => {
   const btn = event.target.closest('.view-btn');
@@ -97,6 +143,7 @@ document.querySelector('.shell').addEventListener('click', (event) => {
 });
 
 render();
+initViewSwitcher();
 setInterval(() => { if (!document.hidden) refreshAll(true); }, 60000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshAll(true); });
 
