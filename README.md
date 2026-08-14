@@ -36,17 +36,6 @@ The toolbar button opens the monitor as a standard Chrome popup — it dismisses
 
 Opening one view closes the other: switching to Tab closes the monitor window and opens a tab, and switching back closes the tab and reopens the window. If the monitor tab has been navigated to another site, it is left alone.
 
-## Dock launcher (macOS)
-
-Optional: give the usage window its own launcher icon in the Dock instead of opening it from the toolbar.
-
-```sh
-bash install-launcher.sh   # installs "AI Usage Monitor.app" into ~/Applications
-bash uninstall-launcher.sh # removes it
-```
-
-After installing, drag **AI Usage Monitor** from `~/Applications` into the Dock and choose *Options → Keep in Dock*. Clicking the Dock icon opens or focuses the usage window without touching the browser. The launcher script detects the extension ID automatically from the browser profile. Re-run `bash install-launcher.sh` after updating the extension so the launcher keeps opening the popup window.
-
 ## Releasing to the Chrome Web Store
 
 1. Create the store item once in the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole) (upload any zip; you'll replace it on each release).
