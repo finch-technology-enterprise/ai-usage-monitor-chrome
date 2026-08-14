@@ -56,6 +56,7 @@
     try {
       const response = await fetch(mistralLimitsUrl(), {
         credentials: 'include',
+        signal: controller.signal,
         headers: {
           'Accept': 'application/jsonl',
           'trpc-accept': 'application/jsonl',
