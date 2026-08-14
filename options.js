@@ -14,6 +14,8 @@ async function render() {
   const { opencodeApiKey = '' } = await chrome.storage.local.get('opencodeApiKey');
   const keyInput = document.getElementById('cfg-opencode-key');
   if (keyInput) keyInput.value = opencodeApiKey;
+  const { viewMode = 'window' } = await chrome.storage.local.get('viewMode');
+  document.getElementById('viewMode').value = viewMode;
 }
 
 document.getElementById('save').addEventListener('click', async () => {
@@ -22,8 +24,12 @@ document.getElementById('save').addEventListener('click', async () => {
     p.id,
     document.getElementById(`en-${p.id}`).checked
   ]));
-  await chrome.storage.local.set({ enabledProviders: map });
+  await chrome.storage.local.set({
+    enabledProviders: map,
+    viewMode: document.getElementById('viewMode').value
+  });
   for (const p of AIUsageProviders.list) await p.readSettings();
+  chrome.runtime.sendMessage({ type: 'AI_USAGE_SYNC_VIEW' }).catch(() => {});
   const status = document.getElementById('status');
   status.textContent = 'Saved.';
   setTimeout(() => { status.textContent = ''; }, 1500);

@@ -51,6 +51,25 @@ h1 { margin: 0; font-size: 19px; letter-spacing: -0.02em; }
 .icon-btn { width: 34px; height: 34px; font-size: 20px; line-height: 1; }
 .icon-btn.spinning { animation: spin .8s linear infinite; }
 .icon-btn:active, .small-btn:active { transform: scale(0.96); }
+.view-switcher { display: flex; gap: 4px; margin-bottom: 12px; align-items: center; }
+.view-btn {
+  flex: 1;
+  padding: 5px 0;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: background 150ms ease-out, color 150ms ease-out;
+}
+.view-btn.active {
+  background: var(--fill);
+  border-color: var(--fill);
+  color: var(--bg);
+  font-weight: 600;
+}
+.close-btn { flex: none; width: 30px; height: 30px; font-size: 14px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .provider {
   background: var(--card);
