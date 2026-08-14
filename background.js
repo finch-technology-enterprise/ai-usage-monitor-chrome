@@ -19,13 +19,25 @@ async function setViewMode(mode) {
 
 // Pings the tracked tab; only our popup.html page answers, so this tells us
 // whether the tab is still ours or the user navigated it somewhere else.
+// A rejection can also mean the tab is still loading (no listener yet), so
+// retry while the tab exists instead of declaring it foreign immediately.
 async function isPopupTab(tabId) {
-  try {
-    const response = await chrome.tabs.sendMessage(tabId, { type: 'AI_USAGE_PING' });
-    return response?.ok === true;
-  } catch {
-    return false;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const response = await chrome.tabs.sendMessage(tabId, { type: 'AI_USAGE_PING' });
+      return response?.ok === true;
+    } catch {
+      let tab;
+      try {
+        tab = await chrome.tabs.get(tabId);
+      } catch {
+        return false; // tab no longer exists
+      }
+      if (tab.status !== 'loading') return false; // loaded but has no listener — not ours
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
   }
+  return false;
 }
 
 async function focusOrCreateWindow() {
@@ -33,7 +45,7 @@ async function focusOrCreateWindow() {
   if (storedId != null) {
     try {
       const win = await chrome.windows.get(storedId);
-      if (win) {
+      if (win && win.type === 'popup') {
         await chrome.windows.update(storedId, { focused: true });
         return { id: win.id, created: false };
       }
@@ -77,6 +89,17 @@ async function closeTrackedTab() {
   } catch { /* tab no longer exists */ }
 }
 
+// All openView calls (toolbar click and switcher messages) go through this
+// chain so two rapid switches cannot interleave — e.g. a tab switch removing
+// a window a window switch is about to focus.
+let viewQueue = Promise.resolve();
+
+function enqueueViewOpen(mode) {
+  const run = viewQueue.then(() => openView(mode));
+  viewQueue = run.catch(() => { /* next caller still runs */ });
+  return run;
+}
+
 async function openView(mode) {
   if (!VIEW_MODES.includes(mode)) mode = DEFAULT_VIEW;
   await setViewMode(mode);
@@ -106,7 +129,17 @@ async function openView(mode) {
 // Dismissable view: close the popup window whenever focus moves elsewhere.
 // A newly created window is only armed once it reports focus itself, so the
 // transient focus events during creation can never close it prematurely.
-chrome.windows.onFocusChanged.addListener(async (windowId) => {
+// Focus changes are serialized so the arm/close reads and writes cannot
+// interleave with each other.
+let focusQueue = Promise.resolve();
+
+chrome.windows.onFocusChanged.addListener((windowId) => {
+  focusQueue = focusQueue
+    .then(() => handleFocusChange(windowId))
+    .catch(() => { /* keep the chain alive */ });
+});
+
+async function handleFocusChange(windowId) {
   const mode = await getViewMode();
   if (mode !== 'dismissable') return;
   const { [WINDOW_KEY]: popupId } = await chrome.storage.session.get(WINDOW_KEY);
@@ -118,11 +151,11 @@ chrome.windows.onFocusChanged.addListener(async (windowId) => {
   if (dismissId == null) return;
   await chrome.storage.session.remove(DISMISS_KEY);
   try { await chrome.windows.remove(dismissId); } catch { /* already closed */ }
-});
+}
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === 'AI_USAGE_SET_VIEW') {
-    openView(message.mode)
+    enqueueViewOpen(message.mode)
       .then(() => sendResponse({ ok: true }))
       .catch((error) => sendResponse({ ok: false, error: String(error) }));
     return true;
@@ -136,7 +169,7 @@ function handleClick() {
   if (!inFlight) {
     inFlight = (async () => {
       const mode = await getViewMode();
-      await openView(mode);
+      await enqueueViewOpen(mode);
     })().finally(() => { inFlight = null; });
   }
   return inFlight;
