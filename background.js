@@ -91,8 +91,7 @@ async function closeTrackedTab() {
 
 // View opens and focus changes go through this single chain so they cannot
 // interleave: rapid switches cannot race each other, and the focus loss that
-// precedes a toolbar click cannot close a window a queued openView is about
-// to focus.
+// precedes a toolbar click runs before the queued openView that follows it.
 let queue = Promise.resolve();
 
 function enqueue(task) {
@@ -130,6 +129,8 @@ async function openView(mode) {
 // Dismissable view: close the popup window whenever focus moves elsewhere.
 // A newly created window is only armed once it reports focus itself, so the
 // transient focus events during creation can never close it prematurely.
+// The close path re-checks focus in case the event is stale (delivered out
+// of order with a queued openView that refocused the window).
 chrome.windows.onFocusChanged.addListener((windowId) => {
   enqueue(() => handleFocusChange(windowId));
 });
@@ -144,13 +145,42 @@ async function handleFocusChange(windowId) {
   }
   const { [DISMISS_KEY]: dismissId } = await chrome.storage.session.get(DISMISS_KEY);
   if (dismissId == null) return;
+  try {
+    const win = await chrome.windows.get(popupId);
+    if (win?.focused) return; // the popup is focused again — the event is stale
+  } catch { /* window gone */ }
   await chrome.storage.session.remove(DISMISS_KEY);
   try { await chrome.windows.remove(dismissId); } catch { /* already closed */ }
+}
+
+// Reconciles the dismiss arm with viewMode as written by the options page,
+// which sets the default without going through openView: switching to
+// dismissable arms a focused popup window, switching away disarms it.
+async function syncDismissArm() {
+  const mode = await getViewMode();
+  const { [WINDOW_KEY]: winId } = await chrome.storage.session.get(WINDOW_KEY);
+  if (winId == null) return;
+  if (mode !== 'dismissable') {
+    await chrome.storage.session.remove(DISMISS_KEY);
+    return;
+  }
+  try {
+    const win = await chrome.windows.get(winId);
+    if (win?.type === 'popup' && win.focused) {
+      await chrome.storage.session.set({ [DISMISS_KEY]: winId });
+    }
+  } catch { /* window gone */ }
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === 'AI_USAGE_SET_VIEW') {
     enqueue(() => openView(message.mode))
+      .then(() => sendResponse({ ok: true }))
+      .catch((error) => sendResponse({ ok: false, error: String(error) }));
+    return true;
+  }
+  if (message?.type === 'AI_USAGE_SYNC_VIEW') {
+    enqueue(syncDismissArm)
       .then(() => sendResponse({ ok: true }))
       .catch((error) => sendResponse({ ok: false, error: String(error) }));
     return true;
@@ -162,10 +192,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 function handleClick() {
   if (!inFlight) {
-    inFlight = (async () => {
-      const mode = await getViewMode();
-      await enqueue(() => openView(mode));
-    })().catch(() => { /* toolbar clicks must not reject unhandled */ })
+    inFlight = enqueue(async () => openView(await getViewMode()))
+      .catch(() => { /* toolbar clicks must not reject unhandled */ })
       .finally(() => { inFlight = null; });
   }
   return inFlight;
@@ -173,6 +201,8 @@ function handleClick() {
 
 chrome.action.onClicked.addListener(handleClick);
 
+// Deliberately unqueued: id-compare-and-remove is idempotent, so it cannot
+// race the queued tasks that write these keys.
 chrome.windows.onRemoved.addListener(async (windowId) => {
   const { [WINDOW_KEY]: storedId } = await chrome.storage.session.get(WINDOW_KEY);
   if (storedId === windowId) await chrome.storage.session.remove(WINDOW_KEY);

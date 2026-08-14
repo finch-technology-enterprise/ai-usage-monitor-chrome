@@ -29,6 +29,7 @@ document.getElementById('save').addEventListener('click', async () => {
     viewMode: document.getElementById('viewMode').value
   });
   for (const p of AIUsageProviders.list) await p.readSettings();
+  chrome.runtime.sendMessage({ type: 'AI_USAGE_SYNC_VIEW' }).catch(() => {});
   const status = document.getElementById('status');
   status.textContent = 'Saved.';
   setTimeout(() => { status.textContent = ''; }, 1500);
