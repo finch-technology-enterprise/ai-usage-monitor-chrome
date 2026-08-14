@@ -106,3 +106,5 @@ h2 { margin: 0; font-size: 16px; }
 footer { display: flex; justify-content: space-between; align-items: center; padding: 4px 2px 0; color: var(--muted); font-size: 11px; }
 .footer-links { display: flex; gap: 10px; }
 .link-btn { border: 0; background: transparent; padding: 4px; color: var(--muted); text-decoration: underline; }
+.empty { text-align: center; color: var(--muted); padding: 24px 0 8px; font-size: 13px; }
+.empty .small-btn { margin-top: 10px; }

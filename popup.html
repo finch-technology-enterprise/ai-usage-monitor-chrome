@@ -16,38 +16,11 @@
       <button id="refreshAll" class="icon-btn" title="Refresh all" aria-label="Refresh all">↻</button>
     </header>
 
-    <section class="provider" id="opencodeCard">
-      <div class="provider-head">
-        <div class="provider-title">
-          <h2>OpenCode</h2>
-          <span id="opencodePlan" class="plan-badge">Go</span>
-        </div>
-        <button class="small-btn" data-open="https://opencode.ai">Open</button>
-      </div>
-      <div id="opencodeBody" class="body"><div class="loading">Loading…</div></div>
-    </section>
-
-    <section class="provider" id="claudeCard">
-      <div class="provider-head">
-        <div class="provider-title">
-          <h2>Claude</h2>
-          <span id="claudePlan" class="plan-badge">Team / subscription</span>
-        </div>
-        <button class="small-btn" data-open="https://claude.ai/settings/usage">Open</button>
-      </div>
-      <div id="claudeBody" class="body"><div class="loading">Loading…</div></div>
-    </section>
-
-    <section class="provider" id="chatgptCard">
-      <div class="provider-head">
-        <div class="provider-title">
-          <h2>ChatGPT / Codex</h2>
-          <span id="chatgptPlan" class="plan-badge">Plus</span>
-        </div>
-        <button class="small-btn" data-open="https://chatgpt.com/#usage">Open</button>
-      </div>
-      <div id="chatgptBody" class="body"><div class="loading">Loading…</div></div>
-    </section>
+    <div id="providers"></div>
+    <div id="emptyState" class="empty" hidden>
+      <p>No providers enabled.</p>
+      <button id="emptySettings" class="small-btn">Open Settings</button>
+    </div>
 
     <footer>
       <span id="privacyText">Local-only. No analytics.</span>
@@ -57,6 +30,16 @@
       </span>
     </footer>
   </main>
+  <script src="providers.js"></script>
+  <script src="providers/opencode.js"></script>
+  <script src="providers/claude.js"></script>
+  <script src="providers/chatgpt.js"></script>
+  <script src="providers/copilot.js"></script>
+  <script src="providers/gemini.js"></script>
+  <script src="providers/cursor.js"></script>
+  <script src="providers/perplexity.js"></script>
+  <script src="providers/mistral.js"></script>
+  <script src="providers/grok.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

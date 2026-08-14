@@ -9,28 +9,25 @@
 <body>
   <main>
     <h1>AI Usage Monitor</h1>
-    <p class="intro">Personal settings stay in this Chrome profile. Claude and ChatGPT use your existing browser sessions; only OpenCode Go needs a key.</p>
+    <p class="intro">Personal settings stay in this Chrome profile. Toggle on the providers you subscribe to; the session-based ones use your existing browser sign-in, and only OpenCode needs a key.</p>
 
-    <section>
-      <h2>OpenCode Go</h2>
-      <label for="opencodeApiKey">API key</label>
-      <div class="input-row">
-        <input id="opencodeApiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…" />
-        <button id="toggleKey" type="button">Show</button>
-      </div>
-      <p class="help">Stored with <code>chrome.storage.local</code> in your Chrome profile. It is only sent to <code>https://opencode.ai/zen/go/v1/usage</code>.</p>
-    </section>
-
-    <section>
-      <h2>Browser sessions</h2>
-      <p>Sign in normally to <strong>claude.ai</strong> and <strong>chatgpt.com</strong>. The extension does not copy or persist those session cookies.</p>
-    </section>
+    <div id="providerSettings"></div>
 
     <div class="actions">
       <button id="save" class="primary">Save</button>
       <span id="status"></span>
     </div>
   </main>
+  <script src="providers.js"></script>
+  <script src="providers/opencode.js"></script>
+  <script src="providers/claude.js"></script>
+  <script src="providers/chatgpt.js"></script>
+  <script src="providers/copilot.js"></script>
+  <script src="providers/gemini.js"></script>
+  <script src="providers/cursor.js"></script>
+  <script src="providers/perplexity.js"></script>
+  <script src="providers/mistral.js"></script>
+  <script src="providers/grok.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

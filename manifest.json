@@ -2,13 +2,20 @@
   "manifest_version": 3,
   "name": "AI Usage Quota Monitor",
   "version": "0.1.0",
-  "description": "Personal quota monitor for OpenCode Go, Claude, and ChatGPT/Codex.",
+  "description": "Personal quota monitor for OpenCode, Claude, ChatGPT/Codex, Copilot, Gemini, Cursor, Perplexity, Mistral Le Chat, and Grok.",
   "minimum_chrome_version": "120",
   "permissions": ["storage", "cookies"],
   "host_permissions": [
     "https://opencode.ai/*",
     "https://claude.ai/*",
-    "https://chatgpt.com/*"
+    "https://chatgpt.com/*",
+    "https://copilot.github.com/*",
+    "https://api.githubcopilot.com/*",
+    "https://gemini.google.com/*",
+    "https://cursor.com/*",
+    "https://www.perplexity.ai/*",
+    "https://chat.mistral.ai/*",
+    "https://grok.com/*"
   ],
   "action": {
     "default_title": "AI Usage Monitor",
@@ -38,6 +45,36 @@
     {
       "matches": ["https://chatgpt.com/*"],
       "js": ["relay-chatgpt.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://copilot.github.com/*", "https://github.com/*"],
+      "js": ["relay-copilot.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://gemini.google.com/*"],
+      "js": ["relay-gemini.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://cursor.com/*"],
+      "js": ["relay-cursor.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.perplexity.ai/*"],
+      "js": ["relay-perplexity.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://chat.mistral.ai/*"],
+      "js": ["relay-mistral.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://grok.com/*"],
+      "js": ["relay-grok.js"],
       "run_at": "document_idle"
     }
   ]
