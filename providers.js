@@ -108,6 +108,21 @@ async function jsonFetch(url, options = {}) {
   }
 }
 
+async function textFetch(url, options = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    const text = await response.text();
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    return text;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function relayMessage(hostPattern, message) {
   const tabs = await chrome.tabs.query({ url: hostPattern });
   for (const tab of tabs) {
@@ -125,7 +140,7 @@ const DEFAULT_ENABLED = ['opencode', 'claude', 'chatgpt'];
 async function loadProviderPrefs() {
   const stored = await chrome.storage.local.get(['enabledProviders', 'opencodeApiKey']);
   let map = stored.enabledProviders;
-  if (map == null) {
+  if (map == null || typeof map !== 'object') {
     map = stored.opencodeApiKey ? Object.fromEntries(DEFAULT_ENABLED.map((id) => [id, true])) : {};
     await chrome.storage.local.set({ enabledProviders: map });
   }

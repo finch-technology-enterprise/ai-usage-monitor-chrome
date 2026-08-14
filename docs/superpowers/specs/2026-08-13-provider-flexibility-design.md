@@ -108,8 +108,8 @@ missing one: the registry keeps the UI stable.
   browser session for X", or "Stored key sent only to opencode.ai").
 - `Save` persists `{ enabledProviders: { id: bool }, opencodeApiKey }` to
   `chrome.storage.local`.
-- Toggles render immediately (no save needed to see popup effect); the
-  API key still requires Save (unchanged behavior).
+- Toggles apply on Save; the API key still requires Save (unchanged
+  behavior).
 
 ### Storage
 

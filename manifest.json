@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "AI Usage Quota Monitor",
   "version": "0.1.0",
-  "description": "Personal quota monitor for OpenCode Go, Claude, and ChatGPT/Codex.",
+  "description": "Personal quota monitor for OpenCode, Claude, ChatGPT/Codex, Copilot, Gemini, Cursor, Perplexity, Mistral Le Chat, and Grok.",
   "minimum_chrome_version": "120",
   "permissions": ["storage", "cookies"],
   "host_permissions": [
@@ -13,7 +13,6 @@
     "https://api.githubcopilot.com/*",
     "https://gemini.google.com/*",
     "https://cursor.com/*",
-    "https://curl.cursorapi.com/*",
     "https://www.perplexity.ai/*",
     "https://chat.mistral.ai/*",
     "https://grok.com/*"

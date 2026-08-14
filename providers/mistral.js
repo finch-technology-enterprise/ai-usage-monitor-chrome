@@ -79,7 +79,7 @@ function parseMistralLimits(text) {
 }
 
 async function directMistralUsage() {
-  const response = await fetch(mistralLimitsUrl(), {
+  const text = await textFetch(mistralLimitsUrl(), {
     credentials: 'include',
     headers: {
       'Accept': 'application/jsonl',
@@ -87,8 +87,7 @@ async function directMistralUsage() {
       'x-trpc-source': 'nextjs-react'
     }
   });
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  const limits = parseMistralLimits(await response.text());
+  const limits = parseMistralLimits(text);
   if (!limits) throw new Error('Unexpected Mistral limits response format');
   return limits;
 }

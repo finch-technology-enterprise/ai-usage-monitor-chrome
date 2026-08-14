@@ -36,7 +36,6 @@ function copilotUsageHtml(data) {
 AIUsageProviders.register({
   id: 'copilot',
   label: 'GitHub Copilot',
-  plan: 'Subscription',
   needs: 'session',
   openUrl: 'https://copilot.github.com',
   async refresh(silent = false) {

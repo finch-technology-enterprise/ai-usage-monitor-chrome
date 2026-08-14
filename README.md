@@ -53,7 +53,7 @@ The submission still goes through Chrome's review process; the workflow automate
 
 ## How it works
 
-Every provider tries to fetch usage directly from the extension context first; if that fails, it relays the request through an already-open tab of that provider's website. Each provider card lists what it needs and what it shows.
+Every provider tries to fetch usage directly from the extension context first; if that fails, it relays the request through an already-open tab of that provider's website. Each provider card lists what it needs and what it shows. (Gemini is the exception today: it skips fetching — no endpoint exists — and Copilot lands in the same "not available" state since its endpoint is retired.)
 
 ### OpenCode
 
@@ -103,7 +103,7 @@ Needs a signed-in session at `cursor.com`. Calls:
 
 `GET https://cursor.com/api/usage`
 
-(session-gated; the old `curl.cursorapi.com` host is retired). Direct fetch first, relay fallback through an open Cursor tab.
+(session-gated). Direct fetch first, relay fallback through an open Cursor tab.
 
 ### Perplexity
 
@@ -135,7 +135,7 @@ and renders remaining counts for the free-tier gates (chat, image & video, voice
 - No external server owned by this extension.
 - The OpenCode API key is saved in `chrome.storage.local` for convenience and is sent only to `opencode.ai`.
 - Session cookies for the other providers are never copied into extension storage.
-- Host access is limited to the provider sites this extension talks to: `opencode.ai`, `claude.ai`, `chatgpt.com`, `copilot.github.com`, `api.githubcopilot.com`, `gemini.google.com`, `cursor.com`, `curl.cursorapi.com`, `www.perplexity.ai`, `chat.mistral.ai`, and `grok.com`. This extension intentionally does not request `<all_urls>`.
+- Host access is limited to the provider sites this extension talks to: `opencode.ai`, `claude.ai`, `chatgpt.com`, `copilot.github.com`, `api.githubcopilot.com`, `gemini.google.com`, `cursor.com`, `www.perplexity.ai`, `chat.mistral.ai`, and `grok.com`. This extension intentionally does not request `<all_urls>`.
 - The quota endpoints are internal web endpoints and may change without notice. If a provider changes its response shape or endpoint, update the corresponding adapter in `providers/*.js` or its relay script.
 
 ## Troubleshooting

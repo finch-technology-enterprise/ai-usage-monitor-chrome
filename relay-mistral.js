@@ -48,17 +48,29 @@
     return null;
   }
 
+  // Local copy of the textFetch timeout pattern from providers.js — content
+  // scripts are isolated from the popup context and there is no bundler.
+  async function fetchLimitsText() {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    try {
+      const response = await fetch(mistralLimitsUrl(), {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/jsonl',
+          'trpc-accept': 'application/jsonl',
+          'x-trpc-source': 'nextjs-react'
+        }
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.text();
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   async function fetchLimits() {
-    const response = await fetch(mistralLimitsUrl(), {
-      credentials: 'include',
-      headers: {
-        'Accept': 'application/jsonl',
-        'trpc-accept': 'application/jsonl',
-        'x-trpc-source': 'nextjs-react'
-      }
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const limits = parseMistralLimits(await response.text());
+    const limits = parseMistralLimits(await fetchLimitsText());
     if (!limits) throw new Error('Unexpected Mistral limits response format');
     return limits;
   }
