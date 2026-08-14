@@ -1,5 +1,44 @@
 const $ = (id) => document.getElementById(id);
 
+const VIEW_MODES = ['window', 'dismissable', 'tab'];
+let viewMode = 'window';
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type === 'AI_USAGE_PING') sendResponse({ ok: true });
+});
+
+async function initViewSwitcher() {
+  const { viewMode: saved } = await chrome.storage.local.get('viewMode');
+  viewMode = VIEW_MODES.includes(saved) ? saved : 'window';
+  document.querySelectorAll('.view-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.mode === viewMode);
+  });
+}
+
+document.querySelector('.view-switcher').addEventListener('click', async (event) => {
+  const btn = event.target.closest('.view-btn');
+  if (!btn || btn.dataset.mode === viewMode) return;
+  viewMode = btn.dataset.mode;
+  document.querySelectorAll('.view-btn').forEach((b) => {
+    b.classList.toggle('active', b.dataset.mode === viewMode);
+  });
+  try {
+    const response = await chrome.runtime.sendMessage({ type: 'AI_USAGE_SET_VIEW', mode: viewMode });
+    if (!response?.ok) await initViewSwitcher();
+  } catch {
+    await initViewSwitcher();
+  }
+});
+
+$('closeView').addEventListener('click', () => window.close());
+
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  chrome.windows.getCurrent().then((win) => {
+    if (win?.type === 'popup') window.close();
+  });
+});
+
 function providerCardHtml(p) {
   return `
     <section class="provider" id="card-${p.id}">

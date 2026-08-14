@@ -27,6 +27,16 @@ Except OpenCode, every provider uses your existing signed-in session on its webs
 
 On a fresh install no providers are enabled and the popup shows an empty state — open Settings to enable the ones you use.
 
+## View modes
+
+The monitor can be viewed three ways, chosen in Settings or with the switcher at the top of the monitor itself (the last choice becomes the default for the toolbar button):
+
+- **Window** — a persistent popup window that stays open until you close it (Cmd+W or the ✕ button).
+- **Dismissable** — the same popup window, but it closes automatically when you click away to another window or app.
+- **Tab** — the monitor as a normal browser tab, handy when you want it alongside your work.
+
+Switching between the two window modes happens in place; switching to Tab closes the monitor window and opens a tab, and switching back closes the tab and reopens the window. If the monitor tab has been navigated to another site, it is left alone.
+
 ## Dock launcher (macOS)
 
 Optional: give the usage window its own launcher icon in the Dock instead of opening it from the toolbar.
